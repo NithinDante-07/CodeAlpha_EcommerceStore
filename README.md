@@ -4,8 +4,6 @@ A full-stack e-commerce store where users can browse products, manage a shopping
 
 `Node.js` `Express` `SQLite` `bcrypt` `Sessions` `Vanilla JS`
 
-![screenshot placeholder](./screenshot.png)
-
 ## Why I built this
 
 This was Task 1 of a full-stack development challenge: build a working e-commerce site with real authentication, a real database, and a real checkout flow — not just static mockups. The goal was to understand how the pieces of a full-stack app actually connect: frontend fetch calls → Express routes → SQL queries → back to the browser.
