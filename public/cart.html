@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Store — Cart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="nav" id="nav"></nav>
+
+<div class="container">
+  <h1>Your cart</h1>
+  <div id="cartWrap">Loading…</div>
+</div>
+
+<script src="/app.js"></script>
+<script>
+async function render() {
+  const me = await loadNav();
+  const wrap = document.getElementById('cartWrap');
+  if (!me) {
+    wrap.innerHTML = `<div class="empty-state">Please <a href="/login.html" style="text-decoration:underline;">log in</a> to view your cart.</div>`;
+    return;
+  }
+  const items = await api('/api/cart');
+  if (items.length === 0) {
+    wrap.innerHTML = `<div class="empty-state">Your cart is empty. <a href="/" style="text-decoration:underline;">Browse products</a></div>`;
+    return;
+  }
+  const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  wrap.innerHTML = `
+    <div>
+      ${items.map(i => `
+        <div class="cart-row" data-cart-id="${i.cart_id}">
+          <img src="${i.image}" alt="${i.name}">
+          <div>
+            <strong>${i.name}</strong><br>
+            <span style="color:#777;font-size:13px;">${money(i.price)} each</span>
+          </div>
+          <input type="number" class="qtyInput" value="${i.quantity}" min="1">
+          <span>${money(i.price * i.quantity)}</span>
+          <button class="btn secondary removeBtn">Remove</button>
+        </div>
+      `).join('')}
+    </div>
+    <div class="cart-summary">
+      <span>Total</span>
+      <span>${money(total)}</span>
+    </div>
+    <div style="margin-top:20px; text-align:right;">
+      <button class="btn" id="checkoutBtn">Checkout</button>
+    </div>
+    <p id="msg" class="error"></p>
+  `;
+
+  document.querySelectorAll('.qtyInput').forEach(input => {
+    input.addEventListener('change', async (e) => {
+      const cartId = e.target.closest('.cart-row').dataset.cartId;
+      const qty = parseInt(e.target.value) || 1;
+      await api('/api/cart/' + cartId, { method: 'PUT', body: JSON.stringify({ quantity: qty }) });
+      render();
+    });
+  });
+  document.querySelectorAll('.removeBtn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const cartId = e.target.closest('.cart-row').dataset.cartId;
+      await api('/api/cart/' + cartId, { method: 'DELETE' });
+      render();
+    });
+  });
+  document.getElementById('checkoutBtn').addEventListener('click', async () => {
+    try {
+      const result = await api('/api/checkout', { method: 'POST' });
+      window.location.href = '/orders.html';
+    } catch (e) {
+      document.getElementById('msg').textContent = e.message;
+    }
+  });
+}
+render();
+</script>
+</body>
+</html>

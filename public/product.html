@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Store — Product</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="nav" id="nav"></nav>
+
+<div class="container">
+  <div class="detail" id="detail">Loading…</div>
+  <p id="msg" class="error"></p>
+</div>
+
+<script src="/app.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+
+async function init() {
+  const me = await loadNav();
+  const p = await api('/api/products/' + id);
+  document.getElementById('detail').innerHTML = `
+    <img src="${p.image}" alt="${p.name}">
+    <div>
+      <h1>${p.name}</h1>
+      <div class="price">${money(p.price)}</div>
+      <p>${p.description}</p>
+      <p style="color:#777;font-size:13px;">${p.stock} in stock</p>
+      <div class="qty-row">
+        <label>Qty</label>
+        <input type="number" id="qty" value="1" min="1" max="${p.stock}">
+      </div>
+      <button class="btn" id="addBtn">Add to cart</button>
+    </div>
+  `;
+  document.getElementById('addBtn').addEventListener('click', async () => {
+    if (!me) { window.location.href = '/login.html'; return; }
+    const qty = parseInt(document.getElementById('qty').value) || 1;
+    try {
+      await api('/api/cart', { method: 'POST', body: JSON.stringify({ product_id: p.id, quantity: qty }) });
+      document.getElementById('msg').style.color = '#4C8577';
+      document.getElementById('msg').textContent = 'Added to cart!';
+      loadNav();
+    } catch (e) {
+      document.getElementById('msg').style.color = '#C1553B';
+      document.getElementById('msg').textContent = e.message;
+    }
+  });
+}
+init();
+</script>
+</body>
+</html>

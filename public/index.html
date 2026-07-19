@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Store — Shop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="nav" id="nav"></nav>
+
+<div class="hero">
+  <h1>Everyday things, well made.</h1>
+  <p>A small catalog of gear for your desk, your commute, and your workouts.</p>
+</div>
+
+<div class="container">
+  <div class="grid" id="productGrid">Loading products…</div>
+</div>
+
+<footer>Task 1 — Simple E-commerce Store · Full Stack Development Task List</footer>
+
+<script src="/app.js"></script>
+<script>
+async function init() {
+  await loadNav();
+  const products = await api('/api/products');
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = products.map(p => `
+    <a class="card" href="/product.html?id=${p.id}">
+      <img src="${p.image}" alt="${p.name}">
+      <div class="card-body">
+        <h3>${p.name}</h3>
+        <div class="desc">${p.description}</div>
+        <div class="price">${money(p.price)}</div>
+      </div>
+    </a>
+  `).join('');
+}
+init();
+</script>
+</body>
+</html>

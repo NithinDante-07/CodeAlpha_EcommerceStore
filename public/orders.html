@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Store — Orders</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="nav" id="nav"></nav>
+
+<div class="container">
+  <h1>Your orders</h1>
+  <div id="ordersWrap">Loading…</div>
+</div>
+
+<script src="/app.js"></script>
+<script>
+async function render() {
+  const me = await loadNav();
+  const wrap = document.getElementById('ordersWrap');
+  if (!me) {
+    wrap.innerHTML = `<div class="empty-state">Please <a href="/login.html" style="text-decoration:underline;">log in</a> to view your orders.</div>`;
+    return;
+  }
+  const orders = await api('/api/orders');
+  if (orders.length === 0) {
+    wrap.innerHTML = `<div class="empty-state">No orders yet. <a href="/" style="text-decoration:underline;">Start shopping</a></div>`;
+    return;
+  }
+  wrap.innerHTML = orders.map(o => `
+    <div class="order-card">
+      <div class="order-head">
+        <span>Order #${o.id} · ${new Date(o.created_at).toLocaleDateString()}</span>
+        <span>${money(o.total)}</span>
+      </div>
+      ${o.items.map(i => `
+        <div class="order-item">
+          <span>${i.name} × ${i.quantity}</span>
+          <span>${money(i.price * i.quantity)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+render();
+</script>
+</body>
+</html>
